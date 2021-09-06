@@ -20,6 +20,7 @@ import java.util.Set;
 public abstract class MMKVSharedPreferences implements SharedPreferences {
 
     private final String ALL_KEYS = "mmkv_all_key";
+    private final String TYPE_SUFFIX = "_mtype";
 
     private static final int TYPE_INT = 1;
     private static final int TYPE_LONG = 2;
@@ -27,6 +28,8 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
     private static final int TYPE_SET = 4;
     private static final int TYPE_FLOAT = 5;
     private static final int TYPE_BOOL = 6;
+
+    private static final int TYPE_UNKNOW = -101;
 
     private final MMKV mmkv;
     private final MMKV mmkvType;
@@ -36,10 +39,10 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
     public MMKVSharedPreferences(String name, int mode) {
         if (mode == Context.MODE_MULTI_PROCESS) {
             mmkv = MMKV.mmkvWithID(name, MMKV.MULTI_PROCESS_MODE);
-            mmkvType = MMKV.mmkvWithID(name + "_mtype", MMKV.MULTI_PROCESS_MODE);
+            mmkvType = MMKV.mmkvWithID(name + TYPE_SUFFIX, MMKV.MULTI_PROCESS_MODE);
         } else {
             mmkv = MMKV.mmkvWithID(name);
-            mmkvType = MMKV.mmkvWithID(name + "_mtype");
+            mmkvType = MMKV.mmkvWithID(name + TYPE_SUFFIX);
         }
     }
 
@@ -82,9 +85,9 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
         if (allKeys != null) {
             HashMap<String, Object> all = new HashMap<>();
             for (String key : allKeys) {
-                int type = mmkvType.getInt(key, -100866);
+                int type = mmkvType.getInt(key, TYPE_UNKNOW);
                 Object value = null;
-                if (type != -100866) {
+                if (type != TYPE_UNKNOW) {
                     switch (type) {
                         case TYPE_INT:
                             value = mmkv.getInt(key, 0);
