@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MMKVSharedPreferences implements SharedPreferences {
+public abstract class MMKVSharedPreferences implements SharedPreferences {
 
     private final String ALL_KEYS = "mmkv_all_key";
 
@@ -30,7 +30,6 @@ public class MMKVSharedPreferences implements SharedPreferences {
 
     private final MMKV mmkv;
     private final MMKV mmkvType;
-    private final Handler mainHandler;
 
     private List<OnSharedPreferenceChangeListener> onSharedPreferenceChangeListeners;
 
@@ -42,7 +41,6 @@ public class MMKVSharedPreferences implements SharedPreferences {
             mmkv = MMKV.mmkvWithID(name);
             mmkvType = MMKV.mmkvWithID(name + "_mtype");
         }
-        mainHandler = new Handler(Looper.getMainLooper());
     }
 
     public void importFromSharedPreferences(SharedPreferences preferences) {
@@ -72,6 +70,10 @@ public class MMKVSharedPreferences implements SharedPreferences {
             }
             editor.apply();
         }
+    }
+
+    protected List<OnSharedPreferenceChangeListener> getOnSharedPreferenceChangeListeners() {
+        return onSharedPreferenceChangeListeners;
     }
 
     @Override
@@ -175,22 +177,9 @@ public class MMKVSharedPreferences implements SharedPreferences {
         }
     }
 
-    protected void notifyListener(final String key) {
-        if (onSharedPreferenceChangeListeners != null) {
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                for (OnSharedPreferenceChangeListener onSharedPreferenceChangeListener : onSharedPreferenceChangeListeners) {
-                    onSharedPreferenceChangeListener.onSharedPreferenceChanged(MMKVSharedPreferences.this, key);
-                }
-            } else {
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyListener(key);
-                    }
-                });
-            }
-        }
-    }
+    protected abstract void notifyListener(final String key);
+
+    protected abstract void notifyListener(Set<String> allKeys);
 
     class MMKVEdit implements Editor {
 
@@ -325,9 +314,7 @@ public class MMKVSharedPreferences implements SharedPreferences {
             Set<String> allKeys = mmkvType.getStringSet(ALL_KEYS, null);
             mmkv.clear();
             if (allKeys != null) {
-                for (String key : allKeys) {
-                    notifyListener(key);
-                }
+                notifyListener(allKeys);
                 allKeys.clear();
             }
             mmkvType.putStringSet(ALL_KEYS, allKeys);
@@ -339,4 +326,5 @@ public class MMKVSharedPreferences implements SharedPreferences {
         }
 
     }
+
 }

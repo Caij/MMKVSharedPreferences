@@ -22,13 +22,27 @@ public class MMKVSharedPreferencesFactory {
         }
     }
 
+    public SharedPreferences getSharedPreferencesSimple(Context context, String name, int mode) {
+        init(context);
+        SharedPreferences sharedPreferences;
+        synchronized (sSharedPrefs) {
+            sharedPreferences = sSharedPrefs.get(name);
+            if (sharedPreferences == null) {
+                sharedPreferences = new SimpleMMKVSharedPreferences(name, mode);
+                sSharedPrefs.put(name, sharedPreferences);
+            }
+        }
+        return sharedPreferences;
+    }
+
     public SharedPreferences getSharedPreferences(Context context, String name, int mode) {
         init(context);
         SharedPreferences sharedPreferences;
         synchronized (sSharedPrefs) {
             sharedPreferences = sSharedPrefs.get(name);
             if (sharedPreferences == null) {
-                sharedPreferences = new MMKVSharedPreferences(name, mode);
+                sharedPreferences = mode == Context.MODE_MULTI_PROCESS ? new MultiProcessMMKVSharedPreferences(context, name, mode)
+                        : new SimpleMMKVSharedPreferences(name, mode);
                 sSharedPrefs.put(name, sharedPreferences);
             }
         }
