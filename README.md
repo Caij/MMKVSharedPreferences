@@ -1,5 +1,5 @@
 # MMKVSharedPreferences
-SharedPreferences based on mmkv, compatible with getAll and change listener.
+SharedPreferences based on [MMKV](https://github.com/Tencent/MMKV), compatible with getAll and change listener.
 
 # Dependency
 add this in your root build.gradle  
