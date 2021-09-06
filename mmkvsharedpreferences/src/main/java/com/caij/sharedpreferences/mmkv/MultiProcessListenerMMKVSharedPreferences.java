@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class MultiProcessMMKVSharedPreferences extends MMKVSharedPreferences {
+public class MultiProcessListenerMMKVSharedPreferences extends MMKVSharedPreferences {
 
     private static final String ACTION_ENTRY_UPDATE = "mmkv.multiprocess.entry.update";
     private static final String KEY_NAME = "key_name";
@@ -21,7 +21,7 @@ public class MultiProcessMMKVSharedPreferences extends MMKVSharedPreferences {
     private final Context app;
     private final String action;
 
-    public MultiProcessMMKVSharedPreferences(Context context, String name, int mode) {
+    public MultiProcessListenerMMKVSharedPreferences(Context context, String name, int mode) {
         super(name, mode);
         this.app = context.getApplicationContext();
         this.action = ACTION_ENTRY_UPDATE + "." + name;
