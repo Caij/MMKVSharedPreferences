@@ -22,7 +22,7 @@ public class MMKVSharedPreferencesFactory {
         }
     }
 
-    public SharedPreferences getSharedPreferencesSimple(Context context, String name, int mode) {
+    public SharedPreferences getSharedPreferences(Context context, String name, int mode) {
         init(context);
         SharedPreferences sharedPreferences;
         synchronized (sSharedPrefs) {
@@ -35,14 +35,13 @@ public class MMKVSharedPreferencesFactory {
         return sharedPreferences;
     }
 
-    public SharedPreferences getSharedPreferences(Context context, String name, int mode) {
+    public SharedPreferences getSharedPreferencesMultiProcessWithListener(Context context, String name) {
         init(context);
         SharedPreferences sharedPreferences;
         synchronized (sSharedPrefs) {
             sharedPreferences = sSharedPrefs.get(name);
             if (sharedPreferences == null) {
-                sharedPreferences = mode == Context.MODE_MULTI_PROCESS ? new MultiProcessListenerMMKVSharedPreferences(context, name, mode)
-                        : new SimpleMMKVSharedPreferences(name, mode);
+                sharedPreferences = new MultiProcessListenerMMKVSharedPreferences(context, name, Context.MODE_MULTI_PROCESS);
                 sSharedPrefs.put(name, sharedPreferences);
             }
         }
