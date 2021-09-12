@@ -7,7 +7,9 @@ import android.content.IntentFilter;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -50,9 +52,9 @@ public class MultiProcessListenerMMKVSharedPreferences extends MMKVSharedPrefere
     }
 
     @Override
-    protected void notifyListener(Set<String> allKeys) {
+    protected void notifyListener(String[] allKeys) {
         Intent intent = new Intent(action);
-        intent.putStringArrayListExtra(KEY_NAMES, new ArrayList<>(allKeys));
+        intent.putStringArrayListExtra(KEY_NAMES, new ArrayList<String>(Arrays.asList(allKeys)));
         app.sendBroadcast(intent);
     }
 

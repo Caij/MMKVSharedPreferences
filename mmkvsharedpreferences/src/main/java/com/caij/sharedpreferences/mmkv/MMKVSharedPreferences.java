@@ -10,14 +10,12 @@ import com.tencent.mmkv.MMKV;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class MMKVSharedPreferences implements SharedPreferences {
 
-    private final String ALL_KEYS = "mmkv_all_key";
     private final String TYPE_SUFFIX = "_mtype";
 
     private static final int TYPE_INT = 1;
@@ -79,8 +77,8 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
 
     @Override
     public Map<String, ?> getAll() {
-        Set<String> allKeys = mmkvType.getStringSet(ALL_KEYS, null);
-        if (allKeys != null) {
+        String[] allKeys = mmkv.allKeys();
+        if (allKeys != null && allKeys.length > 0) {
             HashMap<String, Object> all = new HashMap<>();
             for (String key : allKeys) {
                 int type = mmkvType.getInt(key, TYPE_UNKNOW);
@@ -180,7 +178,7 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
 
     protected abstract void notifyListener(final String key);
 
-    protected abstract void notifyListener(Set<String> allKeys);
+    protected abstract void notifyListener(String[] allKeys);
 
     class MMKVEdit implements Editor {
 
@@ -269,63 +267,48 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
         }
 
         private void commitUpdate() {
-            Set<String> allKeys = mmkvType.getStringSet(ALL_KEYS, null);
-            if (allKeys == null) { allKeys = new HashSet<>(); }
             for (Map.Entry<String, Object> entry : keyValues.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof Integer) {
-                    allKeys.add(entry.getKey());
-                    mmkvType.encode(entry.getKey(), TYPE_INT);
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_INT);
                     mmkv.encode(entry.getKey(), (Integer) value);
                 } else if (value instanceof String) {
-                    allKeys.add(entry.getKey());
-                    mmkvType.encode(entry.getKey(), TYPE_STRING);
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_STRING);
                     mmkv.encode(entry.getKey(), (String) value);
                 } else if (value instanceof Long) {
-                    mmkvType.encode(entry.getKey(), TYPE_LONG);
-                    allKeys.add(entry.getKey());
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_LONG);
                     mmkv.encode(entry.getKey(), (Long) value);
                 } else if (value instanceof Float) {
-                    allKeys.add(entry.getKey());
-                    mmkvType.encode(entry.getKey(), TYPE_FLOAT);
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_FLOAT);
                     mmkv.encode(entry.getKey(), (Float) value);
                 } else if (value instanceof Boolean) {
-                    allKeys.add(entry.getKey());
-                    mmkvType.encode(entry.getKey(), TYPE_BOOL);
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_BOOL);
                     mmkv.encode(entry.getKey(), (Boolean) value);
                 } else if (value instanceof Set) {
-                    allKeys.add(entry.getKey());
-                    mmkvType.encode(entry.getKey(), TYPE_SET);
+                    if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_SET);
                     mmkv.encode(entry.getKey(), (Set<String>) value);
                 } else if (value instanceof MMKVEdit) {
-                    allKeys.remove(entry.getKey());
-                    mmkvType.remove(entry.getKey());
-                    mmkv.remove(entry.getKey());
-                } else if (value == null) {
-                    allKeys.remove(entry.getKey());
                     mmkvType.remove(entry.getKey());
                     mmkv.remove(entry.getKey());
                 }
+
                 notifyListener(entry.getKey());
             }
-            mmkvType.putStringSet(ALL_KEYS, allKeys);
         }
 
         private void commitClear() {
-            Set<String> allKeys = mmkvType.getStringSet(ALL_KEYS, null);
+            String[] allKeys = mmkv.allKeys();
             mmkv.clear();
+            mmkvType.clear();
             if (allKeys != null) {
                 notifyListener(allKeys);
-                allKeys.clear();
             }
-            mmkvType.putStringSet(ALL_KEYS, allKeys);
         }
 
         @Override
         public void apply() {
             commit();
         }
-
     }
 
 }

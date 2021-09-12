@@ -35,7 +35,7 @@ public class SimpleMMKVSharedPreferences extends MMKVSharedPreferences {
     }
 
     @Override
-    protected void notifyListener(Set<String> allKeys) {
+    protected void notifyListener(String[] allKeys) {
         for (String key : allKeys) {
             notifyListener(key);
         }
