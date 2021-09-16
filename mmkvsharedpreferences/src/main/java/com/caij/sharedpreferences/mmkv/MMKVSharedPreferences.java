@@ -269,7 +269,10 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
         private void commitUpdate() {
             for (Map.Entry<String, Object> entry : keyValues.entrySet()) {
                 Object value = entry.getValue();
-                if (value instanceof Integer) {
+                if (value == null) {
+                    mmkvType.remove(entry.getKey());
+                    mmkv.remove(entry.getKey());
+                } else if (value instanceof Integer) {
                     if (!mmkvType.contains(entry.getKey())) mmkvType.encode(entry.getKey(), TYPE_INT);
                     mmkv.encode(entry.getKey(), (Integer) value);
                 } else if (value instanceof String) {
