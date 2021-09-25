@@ -28,18 +28,33 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
     private static final int TYPE_UNKNOW = -101;
 
     private final MMKV mmkv;
-    private final MMKV mmkvType;
+    private MMKV mmkvType;
+    private int mode;
+    private String fileName;
 
     private List<OnSharedPreferenceChangeListener> onSharedPreferenceChangeListeners;
 
     public MMKVSharedPreferences(String name, int mode) {
+        this.fileName = name;
+        this.mode = mode;
         if (mode == Context.MODE_MULTI_PROCESS) {
             mmkv = MMKV.mmkvWithID(name, MMKV.MULTI_PROCESS_MODE);
-            mmkvType = MMKV.mmkvWithID(name + TYPE_SUFFIX, MMKV.MULTI_PROCESS_MODE);
         } else {
             mmkv = MMKV.mmkvWithID(name);
-            mmkvType = MMKV.mmkvWithID(name + TYPE_SUFFIX);
         }
+    }
+
+    private MMKV getMmkvType() {
+        synchronized (this) {
+            if (mmkvType == null) {
+                if (mode == Context.MODE_MULTI_PROCESS) {
+                    mmkvType = MMKV.mmkvWithID(fileName + TYPE_SUFFIX, MMKV.MULTI_PROCESS_MODE);
+                } else {
+                    mmkvType = MMKV.mmkvWithID(fileName + TYPE_SUFFIX);
+                }
+            }
+        }
+        return mmkvType;
     }
 
     public void importFromSharedPreferences(SharedPreferences preferences) {
@@ -77,6 +92,7 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
 
     @Override
     public Map<String, ?> getAll() {
+        MMKV mmkvType = getMmkvType();
         String[] allKeys = mmkv.allKeys();
         if (allKeys != null && allKeys.length > 0) {
             HashMap<String, Object> all = new HashMap<>();
@@ -267,6 +283,7 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
         }
 
         private void commitUpdate() {
+            MMKV mmkvType = getMmkvType();
             for (Map.Entry<String, Object> entry : keyValues.entrySet()) {
                 Object value = entry.getValue();
                 if (value == null) {
@@ -301,6 +318,7 @@ public abstract class MMKVSharedPreferences implements SharedPreferences {
 
         private void commitClear() {
             String[] allKeys = mmkv.allKeys();
+            MMKV mmkvType = getMmkvType();
             mmkv.clear();
             mmkvType.clear();
             if (allKeys != null) {
