@@ -8,10 +8,12 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Map;
+import java.util.Set;
+
 public class HomeActivity extends AppCompatActivity {
 
     private SharedPreferences mPreferences;
-    private SharedPreferences.Editor mEditor;
     private final SharedPreferences.OnSharedPreferenceChangeListener dataChangedListener = (sharedPreferences, s) -> Log.v(HomeActivity.class.getSimpleName(), "Changed element : " + s);
 
     @Override
@@ -20,23 +22,34 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         initView();
 
-        // Instance
-        mPreferences = new MMKVSharedPreferencesFactory().getSharedPreferences(this, "APP_KV", Context.MODE_PRIVATE);
-        //Add Listener
+        mPreferences = SPUtil.getInstance().getSharedPreferences(this, "APP_KV", Context.MODE_PRIVATE);
         mPreferences.registerOnSharedPreferenceChangeListener(dataChangedListener);
-    }
 
+        Map<String, ?> allValues = mPreferences.getAll();
+        for (Map.Entry<String, ?> entry : allValues.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (key != null && value != null) {
+                if (value instanceof Boolean) {
+                    boolean bv = (boolean) value;
+                } else if (value instanceof Integer) {
+                } else if (value instanceof Long) {
+                } else if (value instanceof Float) {
+                } else if (value instanceof String) {
+                } else if (value instanceof Set) {
+                } else {
+                    Log.e("MMKVSharedPreferences", "unknown type: " + value.getClass());
+                }
+            }
+        }
+    }
 
     private void initView() {
         findViewById(R.id.button).setOnClickListener(view -> {
-            mEditor = mPreferences.edit();
-            mEditor.putString("username", "ZhangSan");
-            mEditor.apply();
+            mPreferences.edit().putString("username", "ZhangSan").apply();
         });
         findViewById(R.id.button2).setOnClickListener(view -> {
-            mEditor = mPreferences.edit();
-            mEditor.remove("username");
-            mEditor.apply();
+            mPreferences.edit().remove("username").apply();
         });
     }
 
