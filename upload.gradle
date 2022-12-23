@@ -1,0 +1,96 @@
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+//task javadoc(type: Javadoc) {
+//    source android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier 'javadoc'
+//    from javadoc.destinationDir
+//}
+
+File localPropertiesFile = new File(rootDir.getAbsolutePath() + "/local.properties")
+Properties properties = new Properties()
+properties.load(localPropertiesFile.newDataInputStream())
+def mavenCenterUsername = properties.getProperty('mavenCenterUsername', "")
+def mavenCenterPassword = properties.getProperty('mavenCenterPassword', "")
+def mavenCenterRepoUrl = properties.getProperty('mavenCenterRepoUrl', "")
+def privateRepoUrl = properties.getProperty('privateRepoUrl', "")
+def privateRepoUserName = properties.getProperty('privateRepoUserName', "")
+def privateRepoPassword = properties.getProperty('privateRepoPassword', "")
+
+def versionName = android.defaultConfig.versionName
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+
+            artifact sourcesJar
+//            artifact javadocJar
+
+            pom {
+                name = 'MMKVSharedPreferences'
+                description = 'MMKVSharedPreferences'
+                url = 'https://github.com/Caij/MMKVSharedPreferences'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'caij'
+                        name = 'caij'
+                        email = 'dev.caij@gmail.com'
+                    }
+                }
+
+                scm {
+                    connection = 'https://github.com/Caij/MMKVSharedPreferences.git'
+                    developerConnection = 'https://github.com/Caij/MMKVSharedPreferences.git'
+                    url = 'https://github.com/Caij/MMKVSharedPreferences'
+                }
+            }
+
+
+
+            groupId "io.github.caij"
+            artifactId "MMKVSharedPreferences"
+            version versionName
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url mavenCenterRepoUrl
+            credentials {
+                username mavenCenterUsername // ossrhUsername is your sonatype username
+                password mavenCenterPassword // ossrhUsername is your sonatype password
+            }
+        }
+        maven {
+            url privateRepoUrl
+            credentials {
+                username privateRepoUserName // ossrhUsername is your sonatype username
+                password privateRepoPassword // ossrhUsername is your sonatype password
+            }
+        }
+    }
+}
+
+// signing, this need key, secret, we put it into gradle.properties
+signing {
+    sign publishing.publications.maven
+}
+

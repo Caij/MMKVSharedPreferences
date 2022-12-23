@@ -2,20 +2,10 @@
 SharedPreferences based on [MMKV](https://github.com/Tencent/MMKV), compatible with getAll and change listener.
 
 # Dependency
-add this in your root build.gradle  
-
-```
-allprojects {
-    repositories {
-        maven { url "https://www.jitpack.io" }
-    }
-}
-```
-
-Then, add the library to your module build.gradle  
+add the library to your module build.gradle  
 ```
 dependencies {
-    implementation 'com.github.Caij:MMKVSharedPreferences:latest.release.version'
+    implementation 'io.github.caij:MMKVSharedPreferences:1.0'
 }
 ```
 
