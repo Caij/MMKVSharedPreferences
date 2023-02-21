@@ -17,19 +17,12 @@ public class SimpleMMKVSharedPreferences extends MMKVSharedPreferences {
 
     @Override
     protected void notifyListener(String key) {
-        List<OnSharedPreferenceChangeListener> onSharedPreferenceChangeListeners = getOnSharedPreferenceChangeListeners();
-        if (onSharedPreferenceChangeListeners != null && !onSharedPreferenceChangeListeners.isEmpty()) {
-            if (Looper.myLooper() == Looper.getMainLooper()) {
+        synchronized (this) {
+            List<OnSharedPreferenceChangeListener> onSharedPreferenceChangeListeners = getOnSharedPreferenceChangeListeners();
+            if (onSharedPreferenceChangeListeners != null && !onSharedPreferenceChangeListeners.isEmpty()) {
                 for (OnSharedPreferenceChangeListener onSharedPreferenceChangeListener : onSharedPreferenceChangeListeners) {
-                    onSharedPreferenceChangeListener.onSharedPreferenceChanged(this, key);
+                    mainHandler.post(() -> onSharedPreferenceChangeListener.onSharedPreferenceChanged(SimpleMMKVSharedPreferences.this, key));
                 }
-            } else {
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyListener(key);
-                    }
-                });
             }
         }
     }
